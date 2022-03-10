@@ -88,7 +88,7 @@ void generate_unoise(std::vector<int>& data) {
     std::normal_distribution<> d{0, 100};
 
     for (size_t i = 0; i != data.size(); ++i) {
-        data[i] = i + std::round(d(gen));
+        data[i] = (int) i + std::round(d(gen));
     }
 }
 
@@ -98,7 +98,7 @@ void usage(const char* prog_name) {
     fprintf(stderr, "filename - The name of the output data file.\n");
     fprintf(stderr, "distribution - The output data distribution. "
                     "Possible values:\n"
-                    "  u - uniform distribution\n"
+                    "  uniform - uniform distribution\n"
                     "  unoise - uniform distribution with normal noise\n");
     fprintf(stderr, "size - Number of data elements.\n");
     fflush(stderr);
@@ -127,7 +127,7 @@ int parse_args(int argc, char** argv, prog_args* args) {
 }
 
 dist_type get_dist_type(const char* dist) {
-    if (strcmp(dist, "u") == 0) {
+    if (strcmp(dist, "uniform") == 0) {
         return UNIFORM;
     } else if (strcmp(dist, "unoise") == 0) {
         return UNIFORM_NOISE;

@@ -1,5 +1,5 @@
-#ifndef _BUFFER_H_
-#define _BUFFER_H_
+#ifndef _READ_BUFFERS_H_
+#define _READ_BUFFERS_H_
 
 #ifdef __linux__
     #include <sys/types.h>
@@ -7,6 +7,8 @@
 #else
     #error "Not running on Linux"
 #endif
+
+#include "common.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -16,27 +18,15 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define SECTORSZ 512
-
-// Round down `x` to the nearest multiple of `mul`
-static constexpr uint64_t round_down(uint64_t x, uint64_t mul) {
-    return x - x % mul;
-}
-
-static_assert(round_down(512, 512) == 512);
-static_assert(round_down(13, 512) == 0);
-static_assert(round_down(8, 7) == 7);
-static_assert(round_down(237, 23) == 230);
-
-
 template <typename K>
-struct buffer {
+struct read_buffer {
     K buf[SECTORSZ / sizeof(K)];
     size_t file_pos = 0;
     size_t buf_sz = 0;
     uint64_t timestamp = 0;
 
     static_assert(SECTORSZ % sizeof(K) == 0);
+    static_assert(sizeof(buf) == SECTORSZ);
 
     bool contains(size_t idx) {
         return idx >= file_pos && idx < file_pos + buf_sz;
@@ -56,13 +46,13 @@ struct buffer {
 };
 
 template <typename K, size_t N>
-struct buffers {
+struct read_buffers {
     uint64_t current_time = 0;
     size_t num_read_IO = 0;
     int fd;
-    buffer<K> bufs[N];
+    read_buffer<K> bufs[N];
 
-    buffers(int file_desc) : fd(file_desc) {}
+    read_buffers(int file_desc) : fd(file_desc) {}
 
     K get(size_t idx) {
         do {
@@ -92,3 +82,4 @@ struct buffers {
 };
 
 #endif
+

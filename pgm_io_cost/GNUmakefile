@@ -1,6 +1,6 @@
 # Compiler flags, compile command
 CXX := g++
-CXXFLAGS := -W -Wextra -Wall -Wno-shadow -O2 -std=c++17
+CXXFLAGS := -W -Wextra -Wall -Wno-shadow -Wno-unknown-pragmas -O2 -std=c++17
 cxxcompile = @echo " " $(2) && $(CXX) $(CXXFLAGS) $(DEPCXXFLAGS) $(INC) $(1)
 
 # Build target
@@ -52,7 +52,8 @@ clean:
 	$(call run, rm -rf $(OBJDIR) $(DEPSDIR) \
 					   main \
 					   generate_data \
-					   *.out, CLEAN)
+					   *.out \
+					   *.in, CLEAN)
 
 .PHONY: all clean
 

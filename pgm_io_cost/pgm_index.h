@@ -16,7 +16,7 @@
 #pragma once
 
 #include "piecewise_linear_model.h"
-#include "buffers.h"
+#include "read_buffers.h"
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -93,10 +93,9 @@ protected:
         auto ignore_last = last_el == std::numeric_limits<K>::max(); // max() is the sentinel value
         auto last_n = n - ignore_last;
         last_el = read_data_at(n - 1 - ignore_last);
-        // last -= ignore_last;
 
         auto build_level = [&](auto epsilon, auto in_fun, auto out_fun) {
-            auto n_segments = internal::make_segmentation_par(n, epsilon, in_fun, out_fun);
+            auto n_segments = internal::make_segmentation_par(last_n, epsilon, in_fun, out_fun);
             if (segments.back().slope == 0 && n > 1) {
                 // Here we need to ensure that keys > *(last-1) are approximated to a position == prev_level_size
                 segments.emplace_back(last_el + 1, 0, last_n);
@@ -165,9 +164,12 @@ public:
 
     static constexpr size_t epsilon_value = Epsilon;
 
-    // The file descriptor
-    int fd_;
-    buffers<K, 2> these_buffers;
+    // The input data file descriptor
+    int in_fd_;
+    // The output data file descriptor
+    int out_fd_;
+    // Read buffers
+    read_buffers<K, 2> these_buffers;
     // The number of elements this index was built on.
     size_t n;
     // The smallest element
@@ -195,13 +197,17 @@ public:
      * Constructs the index on the sorted keys in the range [first, last).
      * @param first, last the range containing the sorted keys to be indexed
      */
-    PGMIndex(int fd)
-        : fd_(fd),
-          these_buffers(fd),
-          n(get_data_len(fd)),
+    PGMIndex(int in_fd, int out_fd)
+        : in_fd_(in_fd),
+          these_buffers(in_fd),
+          n(get_data_len(in_fd)),
           first_key(n ? read_data_at(0) : K(0)),
           segments(),
           levels_offsets() {
+        for (size_t i = 1; i != n; ++i) {
+            assert(read_data_at(i) >= read_data_at(i - 1));
+        }
+        (void) out_fd;
         build(n, Epsilon, EpsilonRecursive, segments, levels_offsets);
     }
 
