@@ -1,0 +1,5 @@
+generate_data
+main
+*.out
+obj/
+.deps/
