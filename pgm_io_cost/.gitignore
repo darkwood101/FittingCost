@@ -3,3 +3,4 @@ main
 *.out
 obj/
 .deps/
+*.csv

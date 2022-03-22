@@ -3,8 +3,13 @@
 #include <fcntl.h>
 #include <cstring>
 #include <errno.h>
+#include <cmath>
 
 #include "pgm_index.h"
+
+#ifndef EPS
+#define EPS 128
+#endif
 
 int main(int argc, char** argv) {
     if (argc != 3) {
@@ -28,13 +33,21 @@ int main(int argc, char** argv) {
     }
 
     // Construct the PGM-index
-    constexpr int epsilon = 128;
+    constexpr int epsilon = EPS;
+    // try 32
     pgm::PGMIndex<int, epsilon> index(in_fd, out_fd);
 
     close(in_fd);
     close(out_fd);
 
-    printf("%lu\n", index.these_buffers.num_read_IO);
+    size_t num_write_IO = std::ceil((float) index.size_in_bytes() / SECTORSZ);
+
+    printf("%lu,%lu,%lu,%lu,%lu\n",
+           index.n * sizeof(int),
+           index.these_buffers.num_read_IO,
+           num_write_IO,
+           index.segments_count(),
+           index.height());
 
     return EXIT_SUCCESS;
 }

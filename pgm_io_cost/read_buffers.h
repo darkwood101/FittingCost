@@ -10,8 +10,6 @@
 
 #include "common.h"
 
-#include <cstddef>
-#include <cstdint>
 #include <cassert>
 #include <cstdio>
 

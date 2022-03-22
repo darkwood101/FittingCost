@@ -17,6 +17,7 @@
 
 #include "piecewise_linear_model.h"
 #include "read_buffers.h"
+#include "write_buffers.h"
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -168,8 +169,13 @@ public:
     int in_fd_;
     // The output data file descriptor
     int out_fd_;
+
     // Read buffers
     read_buffers<K, 2> these_buffers;
+    // Write buffers
+    //write_buffer<Segment> segment_buffer;
+    //write_buffer<size_t> level_offsets;
+
     // The number of elements this index was built on.
     size_t n;
     // The smallest element
@@ -204,9 +210,6 @@ public:
           first_key(n ? read_data_at(0) : K(0)),
           segments(),
           levels_offsets() {
-        for (size_t i = 1; i != n; ++i) {
-            assert(read_data_at(i) >= read_data_at(i - 1));
-        }
         (void) out_fd;
         build(n, Epsilon, EpsilonRecursive, segments, levels_offsets);
     }

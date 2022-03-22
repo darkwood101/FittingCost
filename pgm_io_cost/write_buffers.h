@@ -10,17 +10,31 @@
 
 #include "common.h"
 
+#include <cassert>
+
 template <typename K>
 struct write_buffer {
     K buf[SECTORSZ / sizeof(K)];
-    size_t file_pos = 0;
     size_t buf_sz = 0;
-    uint64_t timestamp = 0;
 
     static_assert(SECTORSZ % sizeof(K) == 0);
+    static_assert(sizeof(buf) == SECTORSZ);
 
-    bool contains(size_t idx) {
-
+    bool full() {
+        return buf_sz == sizeof(buf) / sizeof(K);
+    }
+    void push_back(int fd, K& el) {
+        if (full()) {
+            evict(fd);
+        }
+        buf[buf_sz++] = el;
+    }
+    void evict(int fd) {
+        size_t file_pos = lseek(fd, 0, SEEK_END) / sizeof(K);
+        off_t write_pos = file_pos * sizeof(K);
+        assert(lseek(fd, write_pos, SEEK_SET) == write_pos);
+        write(fd, buf, buf_sz * sizeof(K));
+        buf_sz = 0;
     }
 };
 

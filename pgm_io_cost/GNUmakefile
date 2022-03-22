@@ -9,6 +9,11 @@ all: main generate_data
 # Generic run command
 run = @$(if $(2), echo " " $(2) $(3) &&,) $(1) $(3)
 
+# epsilon has to be set at compile-time
+ifdef EPS
+CXXFLAGS += -DEPS=$(EPS)
+endif
+
 # Dependencies
 DEPSDIR := .deps
 DEPFILES := $(wildcard $(DEPSDIR)/*.d)
